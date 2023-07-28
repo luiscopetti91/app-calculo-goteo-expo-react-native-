@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ActivityIndicator, Image, Text, TextInput, TouchableOpacity, StyleSheet, Switch, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, ActivityIndicator, Image, Text, TextInput, TouchableOpacity, StyleSheet, Switch, TouchableWithoutFeedback, Keyboard, ScrollView, Dimensions } from 'react-native';
 
 const GoteoApp = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -48,52 +48,68 @@ const GoteoApp = () => {
     setResultado('');
   };
 
-  return (
-    <View style={styles.container}>
-      {isLoading ? (
+ // Función para escalar el tamaño de fuente en función del ancho de la pantalla
+ const scaleFontSize = (fontSize) => {
+  const windowWidth = Dimensions.get('window').width;
+  return Math.round(fontSize * windowWidth / 360);
+};
+
+
+// Obtener las dimensiones de la pantalla
+const { width } = Dimensions.get('window');
+
+return (
+  <ScrollView contentContainerStyle={styles.container}>
+    {isLoading ? (
+      <>
         <ActivityIndicator size="large" color="#007AFF" />
-      ) : (
-        <>
+        <Text style={styles.loadingText}>Cargando...</Text>
+        <Text style={styles.loadingfooter}>...</Text>
+      </>
+    ) : (
+      <>
+        {width > 360 && ( // Ocultar la imagen si el ancho de la pantalla es menor o igual a 360 (pantallas de 5 pulgadas o más pequeñas)
           <Image source={require('./assets/suero.png')} style={styles.logo} />
-          <Text style={styles.title}>Calculadora de Goteo</Text>
+        )}
+        <Text style={styles.title}>Calculadora de Goteo</Text>
 
-          {/* Resto del contenido de la aplicación */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Cantidad (ml)</Text>
-            <TextInput
-              style={styles.input}
-              value={cantidad}
-              onChangeText={setCantidad}
-              keyboardType="numeric"
+        {/* Resto del contenido de la aplicación */}
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Cantidad (ml)</Text>
+          <TextInput
+            style={styles.input}
+            value={cantidad}
+            onChangeText={setCantidad}
+            keyboardType="numeric"
+          />
+        </View>
+
+        <View style={styles.formGroup}>
+          <Text style={styles.label}>Tiempo</Text>
+          <View style={styles.timeContainer}>
+            <Text style={styles.switchText}>{unidadTiempo}</Text>
+            <Switch
+              value={unidadTiempo === 'minutos'}
+              onValueChange={(value) => setUnidadTiempo(value ? 'minutos' : 'horas')}
             />
           </View>
+          <TextInput
+            style={styles.input}
+            value={tiempo}
+            onChangeText={setTiempo}
+            keyboardType="numeric"
+          />
+        </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Tiempo</Text>
-            <View style={styles.timeContainer}>
-              <Text style={styles.switchText}>{unidadTiempo}</Text>
-              <Switch
-                value={unidadTiempo === 'minutos'}
-                onValueChange={(value) => setUnidadTiempo(value ? 'minutos' : 'horas')}
-              />
-            </View>
-            <TextInput
-              style={styles.input}
-              value={tiempo}
-              onChangeText={setTiempo}
-              keyboardType="numeric"
-            />
-          </View>
+        <TouchableOpacity style={styles.button} onPress={calcularGoteo}>
+          <Text style={styles.buttonText}>Calcular Goteo</Text>
+        </TouchableOpacity>
 
-          <TouchableOpacity style={styles.button} onPress={calcularGoteo}>
-            <Text style={styles.buttonText}>Calcular Goteo</Text>
-          </TouchableOpacity>
-
-          {resultado !== '' && <Text style={styles.resultado}>{resultado}</Text>}
-        </>
-      )}
-    </View>
-  );
+        {resultado !== '' && <Text style={styles.resultado}>{resultado}</Text>}
+      </>
+    )}
+  </ScrollView>
+);
 };
 
 const styles = StyleSheet.create({
@@ -109,12 +125,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#007AFF',
     marginBottom: 30,
+    marginTop: 30,
   },
   formGroup: {
     marginBottom: 16,
   },
   label: {
-    marginBottom: 8,
+    marginBottom: 1,
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333333',
@@ -143,9 +160,9 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#007AFF',
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderRadius: 8,
-    marginTop: 30,
+    marginTop: 0,
   },
   buttonText: {
     color: 'white',
@@ -154,8 +171,8 @@ const styles = StyleSheet.create({
   },
   resultado: {
     color: '#333333',
-    fontSize: 18,
-    marginTop: 30,
+    fontSize: 15,
+    marginTop: 15,
     textAlign: 'center',
   },
   timeContainer: {
@@ -163,6 +180,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between', // Para ajustar el espacio entre el texto y el Switch
     marginBottom: 8,
+  },
+  loadingText: {
+    marginTop: 10, // o cualquier valor que desees
+    fontSize: 18, // o cualquier valor que desees
+    color: '#007AFF', // o cualquier valor que desees
+},
+  loadingfooter: {
+    textAlign: 'center',
+    position: 'absolute', 
+    bottom: 0,
+    marginTop: 10, // o cualquier valor que desees
+    fontSize: 18, // o cualquier valor que desees
+    color: 'black', // o cualquier valor que desees
   },
 });
 
